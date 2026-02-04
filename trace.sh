@@ -105,4 +105,4 @@ EOF
 chmod +x trace_menu.sh
 echo "腳本已生成 → ./trace_menu.sh"
 echo "正在自動啟動..."
-bash ./trace_menu.sh || echo "執行失敗，請手動運行：  bash ./trace_menu.sh"
+./trace_menu.sh
