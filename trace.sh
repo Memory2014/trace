@@ -1,12 +1,18 @@
 cat << 'EOF' > trace_menu.sh
 #!/bin/bash
 
-# 检查并安装依赖
+# 强制显示报错
+set -e
+
+# 检查并安装必要组件
+echo "正在检查环境..."
 for cmd in traceroute jq curl; do
     if ! command -v $cmd &> /dev/null; then
+        echo "安装依赖: $cmd"
         sudo apt-get update && sudo apt-get install -y $cmd || sudo yum install -y $cmd
     fi
 done
+
 
 echo "========================================================="
 echo "        VPS 回程路由追踪 (带 ASN 信息)"
