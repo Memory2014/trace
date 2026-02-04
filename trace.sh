@@ -83,12 +83,6 @@ done
 
 EOF
 
-
-cd ~                          # 换到家目录，避免权限问题
-rm -f trace.sh trace_menu.sh  # 先清理旧文件
-curl -L https://raw.githubusercontent.com/Memory2014/trace/refs/heads/main/trace.sh -o trace.sh
-chmod +x trace.sh
-./trace.sh                    # 看这里有没有输出“脚本已生成”和“正在自动启动”
 # 如果上面成功生成了 trace_menu.sh，再单独跑：
 chmod +x trace_menu.sh
 ./trace_menu.sh
