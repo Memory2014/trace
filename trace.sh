@@ -102,12 +102,7 @@ echo ""
 echo "追踪完成。如需更精确的 IPv6 路由，可尝试其他测试点或使用 nexttrace。"
 EOF
 
-# 赋予权限
 chmod +x trace_menu.sh
-
-# 输出提示
-echo "脚本已生成 → trace_menu.sh"
-echo "正在自动启动..."
-
-# 自动运行生成的脚本
-./trace_menu.sh
+echo "腳本已生成 → ./trace_menu.sh"
+echo "正在自動啟動..."
+bash ./trace_menu.sh || echo "執行失敗，請手動運行：  bash ./trace_menu.sh"
