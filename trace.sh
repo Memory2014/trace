@@ -63,3 +63,8 @@ done
 EOF
 
 chmod +x trace_menu.sh
+
+echo "脚本已生成 → trace_menu.sh"
+echo "正在自动启动..."
+
+./trace_menu.sh
