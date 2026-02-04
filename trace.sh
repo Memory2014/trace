@@ -99,10 +99,10 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
 done
 
 echo ""
-echo "追踪完成。如需更精确的 IPv6 路由，可尝试其他测试点或使用 nexttrace。"
+echo "追踪完成。"
 EOF
 
 chmod +x trace_menu.sh
 echo "腳本已生成 → ./trace_menu.sh"
-echo "正在自動啟動..."
+echo "正在启动..."
 ./trace_menu.sh
