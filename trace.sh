@@ -77,7 +77,7 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     TIME=$(echo "$line" | awk '{print $3}')
 
     if [[ "$IP" == "*" ]] || [ -z "$IP" ] || [[ "$IP" == "ms" ]]; then
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "*" "*" "请求超时"
+        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "*" "*" "***"
         continue
     fi
 
