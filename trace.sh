@@ -1,18 +1,35 @@
+#!/bin/bash
+
+# 这个是 trace.sh 的完整版本，用于生成 trace_menu.sh
+# 它会下载/创建带 IPv6 支持的菜单脚本，并自动运行
+# 支持依赖检查、IPv4/IPv6 自动切换、ASN 查询
+
+# 先检查并安装依赖（traceroute, jq, curl）
+echo "正在检查并安装依赖..."
+for cmd in traceroute jq curl; do
+    if ! command -v $cmd &> /dev/null; then
+        echo "安装 $cmd ..."
+        sudo apt-get update -qq && sudo apt-get install -y $cmd 2>/dev/null || \
+        sudo yum install -y $cmd 2>/dev/null || \
+        sudo dnf install -y $cmd 2>/dev/null
+    fi
+done
+
+# 创建 trace_menu.sh 文件
 cat << 'EOF' > trace_menu.sh
 #!/bin/bash
 
 # 强制显示报错
 set -e
 
-# 检查并安装必要组件
+# 检查并安装必要组件（冗余检查，以防万一）
 echo "正在检查环境..."
 for cmd in traceroute jq curl; do
     if ! command -v $cmd &> /dev/null; then
         echo "安装依赖: $cmd"
-        sudo apt-get update && sudo apt-get install -y $cmd || sudo yum install -y $cmd
+        sudo apt-get update && sudo apt-get install -y $cmd || sudo yum install -y $cmd || sudo dnf install -y $cmd
     fi
 done
-
 
 echo "========================================================="
 echo "        VPS 回程路由追踪 (带 ASN 信息) - 支持 IPv4/IPv6"
@@ -81,8 +98,16 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     fi
 done
 
+echo ""
+echo "追踪完成。如需更精确的 IPv6 路由，可尝试其他测试点或使用 nexttrace。"
 EOF
 
-# 如果上面成功生成了 trace_menu.sh，再单独跑：
+# 赋予权限
 chmod +x trace_menu.sh
+
+# 输出提示
+echo "脚本已生成 → trace_menu.sh"
+echo "正在自动启动..."
+
+# 自动运行生成的脚本
 ./trace_menu.sh
