@@ -81,12 +81,9 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     fi
 done
 
-echo ""
-
 EOF
 
 chmod +x trace_menu.sh
-
 echo "脚本已生成 → trace_menu.sh"
 echo "正在自动启动..."
 
