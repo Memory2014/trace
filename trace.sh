@@ -81,21 +81,60 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
         continue
     fi
 
-    # 查询 ASN 信息
-    INFO=$(curl -s --max-time 3 "http://ip-api.com/json/${IP}?fields=status,as,org,regionName" || echo '{"status":"fail"}')
-    
-    if [[ $(echo "$INFO" | jq -r '.status // "fail"') == "success" ]]; then
-        ASN=$(echo "$INFO" | jq -r '.as' | awk '{print $1}' || echo "未知")
-        ORG=$(echo "$INFO" | jq -r '.org // "未知"' )
-        REG=$(echo "$INFO" | jq -r '.regionName // ""')
-        if [ -n "$REG" ]; then
-            printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG ($REG)"
-        else
-            printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG"
-        fi
-    else
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "局域网/未知节点"
+    # 使用 curl -i 取得 headers + body
+    response=$(curl -s -i --max-time 5 "http://ip-api.com/json/${IP}?fields=status,as,org,regionName" 2>/dev/null)
+
+    # 分離 headers 和 body
+    headers=$(echo "$response" | sed '/^\r$/q' | head -n -1)
+    body=$(echo "$response" | sed '1,/^\r$/d')
+
+    # 解析 X-Rl 和 X-Ttl（忽略大小寫）
+    remaining=$(echo "$headers" | grep -i '^X-Rl:' | awk '{print $2}' | tr -d '\r')
+    ttl=$(echo "$headers" | grep -i '^X-Ttl:' | awk '{print $2}' | tr -d '\r')
+
+    # 如果無法解析，預設安全值
+    remaining=${remaining:-45}
+    ttl=${ttl:-0}
+
+    # 接近限額時等待（剩餘 ≤5 次，或 X-Rl=0）
+    if (( remaining <= 5 )) || [[ "$remaining" == "0" ]]; then
+        wait_sec=${ttl:-2}  # 至少等 2 秒
+        echo "    IP-API 剩餘請求少 ($remaining)，等待 ${wait_sec} 秒避免限速..."
+        sleep "$wait_sec"
     fi
+
+    # 使用 body 繼續解析（若 curl 完全失敗，body 會是空）
+    if [[ -z "$body" ]] || [[ $(echo "$body" | jq -r '.status // "fail"') != "success" ]]; then
+        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "局域网/未知节点"
+        continue
+    fi
+
+    ASN=$(echo "$body" | jq -r '.as' | awk '{print $1}' || echo "未知")
+    ORG=$(echo "$body" | jq -r '.org // "未知"' )
+    REG=$(echo "$body" | jq -r '.regionName // ""')
+
+    if [ -n "$REG" ]; then
+        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG ($REG)"
+    else
+        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG"
+    fi
+    
+
+    # 查询 ASN 信息
+    # INFO=$(curl -s --max-time 3 "http://ip-api.com/json/${IP}?fields=status,as,org,regionName" || echo '{"status":"fail"}')
+    #if [[ $(echo "$INFO" | jq -r '.status // "fail"') == "success" ]]; then
+    #    ASN=$(echo "$INFO" | jq -r '.as' | awk '{print $1}' || echo "未知")
+    #    ORG=$(echo "$INFO" | jq -r '.org // "未知"' )
+    #    REG=$(echo "$INFO" | jq -r '.regionName // ""')
+    #    if [ -n "$REG" ]; then
+    #        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG ($REG)"
+    #    else
+    #        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG"
+    #    fi
+    #else
+    #    printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "局域网/未知节点"
+    #fi
+    
 done
 
 echo ""
