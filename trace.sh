@@ -53,7 +53,7 @@ case $CHOICE in
     4) TARGET="211.136.112.252" ;;
     5) TARGET="2408:870c:4000::11" ;;   
     6) TARGET="240e:928:1000::1" ;;
-    7) TARGET="2409:8c1e:75b0:3003::26" ;;
+    7) TARGET="2409:801e:f0:1::1c9" ;;
     8) read -p "请输入 IP 或域名 (支持 IPv4/IPv6): " TARGET ;;
     *) echo "无效选择，退出..."; exit 1 ;;
 esac
