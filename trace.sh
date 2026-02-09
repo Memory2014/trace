@@ -32,7 +32,7 @@ for cmd in traceroute jq curl; do
 done
 
 echo "========================================================="
-echo "        VPS 回程路由追踪 (带 ASN 信息) - 支持 IPv4/IPv6"
+echo "        VPS 回程路由追踪 - 支持 IPv4/IPv6 (ASN来源ip-api) "
 echo "========================================================="
 echo "1) 上海联通 IPv4 (网关) "
 echo "2) 上海联通 IPv4 "
@@ -69,7 +69,7 @@ else
     echo "(使用 IPv4 模式 traceroute -4)"
 fi
 
-printf "%-3s  %-40s  %-10s  %-30s\n" "跳数" "IP 地址" "延迟" "ASN/运营商归属"
+printf "%-3s  %-30s  %-10s  %-30s\n" "跳数" "IP 地址" "延迟" "ASN/运营商归属"
 echo "--------------------------------------------------------------------------------"
 
 traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; do
@@ -78,7 +78,7 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     TIME=$(echo "$line" | awk '{print $3}')
 
     if [[ "$IP" == "*" ]] || [ -z "$IP" ] || [[ "$IP" == "ms" ]]; then
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "*" "*" "***"
+        printf "%-3s  %-30s  %-10s  %-30s\n" "$HOP" "*" "*" "***"
         continue
     fi
 
@@ -106,7 +106,7 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
 
     # 使用 body 繼續解析（若 curl 完全失敗，body 會是空）
     if [[ -z "$body" ]] || [[ $(echo "$body" | jq -r '.status // "fail"') != "success" ]]; then
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "局域网/未知节点"
+        printf "%-3s  %-30s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "局域网/未知节点"
         continue
     fi
 
@@ -115,9 +115,9 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     REG=$(echo "$body" | jq -r '.regionName // ""')
 
     if [ -n "$REG" ]; then
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG ($REG)"
+        printf "%-3s  %-30s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG ($REG)"
     else
-        printf "%-3s  %-40s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG"
+        printf "%-3s  %-30s  %-10s  %-30s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG"
     fi
     
 
