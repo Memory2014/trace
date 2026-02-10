@@ -64,7 +64,7 @@ else
     echo "(使用 IPv4 模式 traceroute -4)"
 fi
 
-printf "%-3s %-40s %-10s %-40s\n" "跳数" "IP 地址" "延迟" "ASN/运营商归属"
+printf "%-3s %-40s %-10s %-40s\n" "跳数" "IP 地址" "延迟" "ASN/运营商归属/地区"
 echo "------------------------------------------------------------------------------------------"
 
 traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; do
@@ -91,17 +91,23 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
         ASN="未知"
         ORG_FULL="未知节点 / 局域网"
     else
-        # ipinfo 的 org 通常是 "ASxxxxxx Provider Name"
-        ASN=$(echo "$ORG" | awk '{print $1}' | grep -o '^AS[0-9]\+' || echo "未知")
-        ORG_FULL=$(echo "$ORG" | sed 's/^AS[0-9]\+ //')
+      ASN=$(echo "$ORG" | awk '{print $1}' | grep -o '^AS[0-9]\+' || echo "未知")
+        ORG_FULL=$(echo "$ORG" | sed 's/^AS[0-9]\+ //; s/^[ \t]*//; s/[ \t]*$//')
         [[ -z "$ORG_FULL" ]] && ORG_FULL="$ORG"
+        
+        if [[ -n "$REGION" && "$REGION" != "null" ]]; then
+            REGION_DISPLAY=" ($REGION)"
+        else
+            REGION_DISPLAY=""
+        fi
+        
     fi
 
     # 可选：如果有 city/region/country，可拼接更多信息
     # CITY=$(echo "$INFO" | jq -r '.city // ""')
     # if [ -n "$CITY" ]; then ORG_FULL="$ORG_FULL ($CITY)"; fi
 
-    printf "%-3s %-40s %-10s %-40s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG_FULL"
+    printf "%-3s %-40s %-10s %-50s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG_FULL$REGION_DISPLAY"
 done
 
 echo ""
