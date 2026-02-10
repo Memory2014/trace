@@ -87,6 +87,8 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     fi
 
     ORG=$(echo "$INFO" | jq -r '.org // "未知"')
+    REGION=$(echo "$INFO" | jq -r '.region // ""')
+    
     if [[ "$ORG" == "null" || -z "$ORG" ]]; then
         ASN="未知"
         ORG_FULL="未知节点 / 局域网"
@@ -104,8 +106,10 @@ traceroute $PROTOCOL -n -w 1 -q 1 "$TARGET" | tail -n +2 | while read -r line; d
     fi
 
     # 可选：如果有 city/region/country，可拼接更多信息
-    # CITY=$(echo "$INFO" | jq -r '.city // ""')
-    # if [ -n "$CITY" ]; then ORG_FULL="$ORG_FULL ($CITY)"; fi
+    CITY=$(echo "$INFO" | jq -r '.city // ""')
+    if [ -n "$CITY" ]; then 
+      ORG_FULL="$ORG_FULL ($CITY)"; 
+      fi
 
     printf "%-3s %-40s %-10s %-50s\n" "$HOP" "$IP" "${TIME}ms" "[$ASN] $ORG_FULL$REGION_DISPLAY"
 done
