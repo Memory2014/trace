@@ -17,3 +17,9 @@ bash <(curl -sL https://raw.githubusercontent.com/Memory2014/trace/main/trace2.s
 ````
 
 
+使用NextTrace
+
+````bash
+bash <(curl -sL https://raw.githubusercontent.com/Memory2014/trace/main/trace3.sh)
+
+````
